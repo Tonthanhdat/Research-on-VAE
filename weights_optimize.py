@@ -64,7 +64,7 @@ print("Bắt đầu quá trình Bayesian Optimization với Optuna...")
 study = optuna.create_study(direction="minimize")
 
 # Chạy tối ưu hóa trong n_trials vòng (ví dụ: 20 vòng thử nghiệm). 
-study.optimize(objective, n_trials=20)
+study.optimize(lambda trial: objective(trial, config), n_trials=20)
 
 print("\nQuá trình tìm kiếm đã hoàn tất!")
 
