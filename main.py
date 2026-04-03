@@ -1,5 +1,6 @@
 from utils import run_training, vae_loss_fn_ver1, vae_loss_fn_ver2, vae_loss_fn_ver3
 import matplotlib.pyplot as plt
+
 from model import VAE
 from data import MNISTDataset, data_split
 
@@ -67,4 +68,8 @@ plt.legend()
 plt.grid(True)
 
 plt.tight_layout()
-plt.show()
+# plt.show()
+
+# Lưu ảnh:
+plt.savefig('loss_comparison.png', dpi=300, bbox_inches='tight')
+print("\nĐã lưu biểu đồ thành công vào file 'loss_comparison.png'")
