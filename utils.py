@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from pytorch_msssim import ssim
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Hàm loss
 def vae_loss_fn_ver1(model, batch, lambda_rec = 1.0, lambda_kl = 1.0, lambda_ssim=0.84):
@@ -197,3 +199,49 @@ def train_tsne_decoder(model, dataloader, optimizer, epochs, device):
             
             overall_loss += loss.item()
             progress_bar.set_postfix(loss=f"{loss.item():.5f}")
+
+        
+def visualize_tsne_latent_space(model, dataloader, device, num_samples=10000):
+    print("\nĐang trích xuất không gian tiềm ẩn để vẽ đồ thị...")
+    model.eval() # Chuyển model sang chế độ đánh giá
+    all_mu = []
+    all_labels = []
+
+    with torch.no_grad(): # Không tính gradient để tiết kiệm bộ nhớ
+        for batch in dataloader:
+            images = batch['image'].to(device)
+            labels = batch['label'].cpu().numpy()
+            
+            # Chỉ sử dụng phần encode để lấy tọa độ 2D (mu)
+            mu, _ = model.encode(images)
+            
+            all_mu.append(mu.cpu().numpy())
+            all_labels.append(labels)
+            
+            # Dừng lại nếu đã đủ số lượng mẫu (giúp biểu đồ không bị quá tải)
+            if sum(len(l) for l in all_labels) >= num_samples:
+                break
+    
+    # Gộp tất cả các batch lại
+    all_mu = np.concatenate(all_mu, axis=0)[:num_samples]
+    all_labels = np.concatenate(all_labels, axis=0)[:num_samples]
+    
+    # --- Bắt đầu vẽ biểu đồ ---
+    plt.figure(figsize=(10, 8))
+    
+    # Vẽ scatter plot: x = mu[:, 0], y = mu[:, 1], màu sắc c = labels
+    # Sử dụng colormap 'tab10' rất phù hợp cho 10 class (chữ số MNIST)
+    scatter = plt.scatter(all_mu[:, 0], all_mu[:, 1], c=all_labels, cmap='tab10', alpha=0.7, s=15)
+    
+    # Thêm thanh chú thích màu sắc
+    cbar = plt.colorbar(scatter, ticks=range(10))
+    cbar.set_label('Nhãn dữ liệu (Labels)')
+    
+    # Trang trí biểu đồ
+    plt.title('Không gian tiềm ẩn (Latent Space) 2D từ t-SNE VAE', fontsize=14, fontweight='bold')
+    plt.xlabel('Dimension 1', fontsize=12)
+    plt.ylabel('Dimension 2', fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
+    plt.tight_layout()
+    plt.show()
