@@ -244,10 +244,10 @@ def visualize_tsne_latent_space(model, dataloader, device, num_samples=10000):
     plt.grid(True, linestyle='--', alpha=0.5)
     
     plt.tight_layout()
-    plt.show()
+    # plt.show() Ko được để plt.show() trước khi lưu
     plt.savefig('structured_latent_space.png', dpi=300, bbox_inches='tight')
     print("\nĐã lưu biểu đồ thành công vào file 'structured_latent_space.png'")
-
+    plt.close()
 
 def compare_constructions(tsne_model, dataloader, device, n_images=10):
     print("\nĐang tạo ảnh so sánh...")
@@ -269,27 +269,34 @@ def compare_constructions(tsne_model, dataloader, device, n_images=10):
         preds_tsne, _, _ = tsne_model(images)
         preds_tsne = preds_tsne.cpu().squeeze(1).numpy()
 
-    # Hàm hỗ trợ vẽ lưới ảnh
-    def plot_images(axes, images_to_plot, title, nrows=2, ncols=n_images):
-        for i in range(nrows):
-            for j in range(ncols):
-                idx = i * ncols + j
-                ax = axes[i, j]
-                if idx < len(images_to_plot):
-                    ax.imshow(images_to_plot[idx], cmap='Greys')
-                ax.axis('off')
-    
-    # --- Vẽ biểu đồ ---
-    # Vẽ Ground Truth
-    fig1, axes1 = plt.subplots(2, n_images, figsize=(15, 3))
-    fig1.suptitle('Ảnh gốc (Ground Truths)', fontsize=16)
-    plot_images(axes1, ground_truth, 'Ảnh gốc (Ground Truths)')
-    plt.show()
+    # --- Vẽ biểu đồ (GỘP CHUNG VÀO 1 FIGURE ĐỂ LƯU ĐẦY ĐỦ) ---
+    fig, axes = plt.subplots(4, n_images, figsize=(15, 6))
+    fig.suptitle('So sánh Ảnh gốc (2 hàng trên) và Tái tạo từ t-SNE VAE (2 hàng dưới)', fontsize=16)
 
-    # Vẽ t-SNE VAE
-    fig3, axes3 = plt.subplots(2, n_images, figsize=(15, 3))
-    fig3.suptitle('Tái tạo từ t-SNE VAE', fontsize=16)
-    plot_images(axes3, preds_tsne, 'Tái tạo từ t-SNE VAE')
-    plt.show()
+    # Vẽ 2 hàng đầu (Ground Truth)
+    for i in range(2):
+        for j in range(n_images):
+            idx = i * n_images + j
+            ax = axes[i, j]
+            if idx < len(ground_truth):
+                ax.imshow(ground_truth[idx], cmap='Greys')
+            ax.axis('off')
+
+    # Vẽ 2 hàng dưới (t-SNE VAE)
+    for i in range(2):
+        for j in range(n_images):
+            idx = i * n_images + j
+            # Cột i + 2 để vẽ xuống hàng thứ 3 và 4 của subplot
+            ax = axes[i + 2, j] 
+            if idx < len(preds_tsne):
+                ax.imshow(preds_tsne[idx], cmap='Greys')
+            ax.axis('off')
+
+    plt.tight_layout()
+    
+    # Lưu toàn bộ Figure 4 hàng này thành 1 ảnh duy nhất (Thay thế plt.show)
     plt.savefig('comparison_reconstruction.png', dpi=300, bbox_inches='tight')
     print("\nĐã lưu biểu đồ thành công vào file 'comparison_reconstruction.png'")
+    
+    # Đóng figure lại để giải phóng bộ nhớ
+    plt.close()
