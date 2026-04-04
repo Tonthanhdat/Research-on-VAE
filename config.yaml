@@ -1,4 +1,5 @@
 batch_size: 128
+num_samples: 5000
 
 latent_features: 32
 
