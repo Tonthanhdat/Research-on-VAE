@@ -31,52 +31,52 @@ print("Device: ", device)
 
 latent_features = config['latent_features'] # 32
 
-# Huấn luyện với 3 hàm loss khác nhau
-# loss 1 
-model_vae_1 = VAE(latent_features=latent_features)
-model_1, history_1 = run_training(model=model_vae_1, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver1)
-print("\n")
-# Loss 2
-model_vae_2 = VAE(latent_features=latent_features)
-model_2, history_2 = run_training(model=model_vae_2, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver2)
-print("\n")
-# Loss 3
-model_vae_3 = VAE(latent_features=latent_features)
-model_3, history_3 = run_training(model=model_vae_3, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver3)
-print("\n")
+# # Huấn luyện với 3 hàm loss khác nhau
+# # loss 1 
+# model_vae_1 = VAE(latent_features=latent_features)
+# model_1, history_1 = run_training(model=model_vae_1, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver1)
+# print("\n")
+# # Loss 2
+# model_vae_2 = VAE(latent_features=latent_features)
+# model_2, history_2 = run_training(model=model_vae_2, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver2)
+# print("\n")
+# # Loss 3
+# model_vae_3 = VAE(latent_features=latent_features)
+# model_3, history_3 = run_training(model=model_vae_3, train_loader=train_loader, val_loader=val_loader, config=config, device=device, loss_fn=vae_loss_fn_ver3)
+# print("\n")
 
-epochs_range = range(1, len(history_1['train_loss']) + 1)
+# epochs_range = range(1, len(history_1['train_loss']) + 1)
 
-plt.figure(figsize=(12, 6))
+# plt.figure(figsize=(12, 6))
 
-# Vẽ đồ thị Train Loss
-plt.subplot(1, 2, 1)
-plt.plot(epochs_range, history_1['train_loss'], label='Train Loss MAE', color='blue', linestyle='-')
-plt.plot(epochs_range, history_2['train_loss'], label='Train Loss MAE and SSIM', color='red', linestyle='-')
-plt.plot(epochs_range, history_3['train_loss'], label='Train Loss MSE and SSIM', color = 'green', linestyle='-')
-plt.title('So sánh Train Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-plt.grid(True)
+# # Vẽ đồ thị Train Loss
+# plt.subplot(1, 2, 1)
+# plt.plot(epochs_range, history_1['train_loss'], label='Train Loss MAE', color='blue', linestyle='-')
+# plt.plot(epochs_range, history_2['train_loss'], label='Train Loss MAE and SSIM', color='red', linestyle='-')
+# plt.plot(epochs_range, history_3['train_loss'], label='Train Loss MSE and SSIM', color = 'green', linestyle='-')
+# plt.title('So sánh Train Loss')
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.legend()
+# plt.grid(True)
 
-# Vẽ đồ thị Validation Loss
-plt.subplot(1, 2, 2)
-plt.plot(epochs_range, history_1['val_loss'], label='Val Loss MAE', color='blue', linestyle='-')
-plt.plot(epochs_range, history_2['val_loss'], label='Val Loss MAE and SSIM', color='red', linestyle='-')
-plt.plot(epochs_range, history_3['val_loss'], label='Val Loss MSE and SSIM', color = 'green', linestyle='-')
-plt.title('So sánh Validation Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-plt.grid(True)
+# # Vẽ đồ thị Validation Loss
+# plt.subplot(1, 2, 2)
+# plt.plot(epochs_range, history_1['val_loss'], label='Val Loss MAE', color='blue', linestyle='-')
+# plt.plot(epochs_range, history_2['val_loss'], label='Val Loss MAE and SSIM', color='red', linestyle='-')
+# plt.plot(epochs_range, history_3['val_loss'], label='Val Loss MSE and SSIM', color = 'green', linestyle='-')
+# plt.title('So sánh Validation Loss')
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.legend()
+# plt.grid(True)
 
-plt.tight_layout()
-# plt.show()
+# plt.tight_layout()
+# # plt.show()
 
-# Lưu ảnh:
-plt.savefig('loss_comparison.png', dpi=300, bbox_inches='tight')
-print("\nĐã lưu biểu đồ thành công vào file 'loss_comparison.png'")
+# # Lưu ảnh:
+# plt.savefig('loss_comparison.png', dpi=300, bbox_inches='tight')
+# print("\nĐã lưu biểu đồ thành công vào file 'loss_comparison.png'")
 
 ### TSNE
 base_vae = VAE(latent_features=latent_features)
