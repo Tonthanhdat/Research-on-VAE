@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader, random_split
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import datasets, transforms
 
 # Xây dựng Wrapper cho Dataset
@@ -35,3 +35,34 @@ def data_split(full_train_dataset, config):
     val_loader = DataLoader(dataset=val_subset, batch_size=config['batch_size'], shuffle=False) # Ko shuffle tập val 
 
     return train_loader, val_loader
+
+### T-SNE
+from sklearn.manifold import TSNE
+import numpy as np
+import torch
+
+def create_tsne_dataloader(train_loader, batch_size, device):
+    print("\n--- ĐANG CHUẨN BỊ DỮ LIỆU t-SNE ---")
+    all_images = []
+    
+    # Rút toàn bộ ảnh từ dataloader hiện tại
+    for batch in train_loader:
+        all_images.append(batch['image'])
+        
+    X_tensor = torch.cat(all_images, dim=0)
+    # Chuyển ảnh thành vector 1D để chạy thuật toán t-SNE gốc
+    X_flat = X_tensor.view(X_tensor.size(0), -1).numpy()
+    
+    print(f"Bắt đầu chạy thuật toán t-SNE trên {X_flat.shape[0]} mẫu dữ liệu. Quá trình này có thể mất vài phút...")
+    tsne = TSNE(n_components=2, random_state=42)
+    tsne_reduced_data = tsne.fit_transform(X_flat)
+    print("Hoàn tất t-SNE!")
+    
+    # Scale dữ liệu (chia 40) theo như công thức bạn đã cung cấp
+    tsne_target = (torch.tensor(tsne_reduced_data, dtype=torch.float32) / 40.0)
+    
+    # Tạo DataLoader mới chứa cặp (Ảnh gốc, Tọa độ t-SNE)
+    tsne_dataset = TensorDataset(X_tensor, tsne_target)
+    tsne_loader = DataLoader(tsne_dataset, batch_size=batch_size, shuffle=True)
+    
+    return tsne_loader
