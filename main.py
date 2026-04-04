@@ -2,13 +2,16 @@ from utils import run_training, vae_loss_fn_ver1, vae_loss_fn_ver2, vae_loss_fn_
 import matplotlib.pyplot as plt
 
 from model import VAE
-from data import MNISTDataset, data_split
+from data import MNISTDataset, data_split, create_tsne_dataloader
 
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Dataset
 import yaml
 import torch
+import torch.optim as optim
 
+from utils import train_tsne_decoder, train_tsne_encoder
+from t_SNE_VAE import TSNE_VAE 
 # Đọc dữ liệu config
 with open("config.yaml", "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
@@ -74,3 +77,35 @@ plt.tight_layout()
 # Lưu ảnh:
 plt.savefig('loss_comparison.png', dpi=300, bbox_inches='tight')
 print("\nĐã lưu biểu đồ thành công vào file 'loss_comparison.png'")
+
+### TSNE
+base_vae = VAE(latent_features=latent_features)
+tsne_model = TSNE_VAE(base_vae=base_vae, latent_features=latent_features)
+
+# Dataloader
+tsne_loader = create_tsne_dataloader(train_loader=train_loader, batch_size=config['batch_size'], device=device)
+
+# Huấn luyện Encoder
+encoder_optimzer = optim.Adam(tsne_model.parameters(), lr=config['learning_rate'])
+train_tsne_encoder(
+    model=tsne_model,
+    dataloader=tsne_loader,
+    optimizer=encoder_optimzer,
+    epochs=10,
+    device=device
+)
+
+# Đóng băng Encoder sau khi train xong
+tsne_model.freeze_encoder()
+
+# Huấn luyện decoder
+decoder_optimizer = optim.Adam(filter(lambda p: p.requires_grad, tsne_model.parameters()), lr=config['learning_rate'])
+train_tsne_decoder(
+    model=tsne_model,
+    dataloader=tsne_loader,
+    optimizer=decoder_optimizer,
+    epochs=10,
+    device=device
+)
+
+print("\nHoàn tất quá trình huấn luyện t-SNE VAE!")
