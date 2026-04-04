@@ -245,6 +245,8 @@ def visualize_tsne_latent_space(model, dataloader, device, num_samples=10000):
     
     plt.tight_layout()
     plt.show()
+    plt.savefig('structured_latent_space.png', dpi=300, bbox_inches='tight')
+    print("\nĐã lưu biểu đồ thành công vào file 'structured_latent_space.png'")
 
 
 def compare_constructions(tsne_model, dataloader, device, n_images=10):
@@ -289,3 +291,5 @@ def compare_constructions(tsne_model, dataloader, device, n_images=10):
     fig3.suptitle('Tái tạo từ t-SNE VAE', fontsize=16)
     plot_images(axes3, preds_tsne, 'Tái tạo từ t-SNE VAE')
     plt.show()
+    plt.savefig('comparison_reconstruction.png', dpi=300, bbox_inches='tight')
+    print("\nĐã lưu biểu đồ thành công vào file 'comparison_reconstruction.png'")
