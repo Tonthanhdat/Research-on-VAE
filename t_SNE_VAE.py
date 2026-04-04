@@ -37,6 +37,14 @@ class TSNE_VAE(nn.Module):
 
         return mu_2d, logvar_2d
     
+    def decode(self, z):
+        # Khôi phục từ 2D về Tensor 4D
+        z_projected = self.fc_decode(z)
+        z_reshaped = z_projected.view(-1, self.base_vae.decoder.latent_features, 4, 4)
+        
+        # Đưa qua Decoder gốc
+        return self.base_vae.decoder(z_reshaped)
+    
     def forward(self, x):
         mu, log_var = self.encode(x)
         z = reparameterization_trick(mu, log_var)
