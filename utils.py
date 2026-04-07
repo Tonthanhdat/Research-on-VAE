@@ -6,6 +6,7 @@ from pytorch_msssim import ssim
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
+import copy
 
 # Hàm loss
 def vae_loss_fn_ver1(model, batch, lambda_rec = 1.0, lambda_kl = 1.0, lambda_ssim=0.84):
@@ -79,6 +80,11 @@ def run_training(model, train_loader, val_loader, config, device, loss_fn = vae_
         "val_loss": []
     }
 
+    patience = config.get('patience')
+    best_val_loss = float('inf')
+    early_stop_counter = 0
+    # best_model_weights = copy.deepcopy(model.state_dict()) # Biến lưu trữ trọng số tốt nhất
+
     # Vòng lặp epoch
     for epoch_idx in range(config['num_epochs']):
         
@@ -110,15 +116,16 @@ def run_training(model, train_loader, val_loader, config, device, loss_fn = vae_
 
             current_loss = loss.item()
             epoch_losses.append(current_loss)
+            history['train_loss'].append(current_loss)
 
             # Cập nhật thanh tiến trình
             progess_bar.set_postfix(loss=f"{current_loss:.4f}")
         
         # Tính trung bình loss sau mỗi epoch
         avg_epoch_loss = sum(epoch_losses) / len(epoch_losses)
-        # print(f"Epoch {epoch_idx+1} | Train Loss trung bình: {avg_epoch_loss:.4f}\n")
+        print(f"Epoch {epoch_idx+1} | Train Loss trung bình: {avg_epoch_loss:.4f}\n")
         # Lưu vào history
-        history['train_loss'].append(avg_epoch_loss)
+        # history['train_loss'].append(avg_epoch_loss)
 
         # Validate model
         model.eval()
@@ -134,16 +141,34 @@ def run_training(model, train_loader, val_loader, config, device, loss_fn = vae_
                     lambda_kl=config['lambda_kl'],
                     lambda_ssim=config['lambda_ssim']
                 ) 
+                history['val_loss'].append(val_loss.item())
                 total_val_loss += val_loss.item()
 
         average_val_loss = total_val_loss / len(val_loader)
         # print(f"Epoch {epoch_idx+1} | Val Loss trung bình: {average_val_loss:.4f}\n")
         # Lưu vào history
-        history['val_loss'].append(average_val_loss)
+        # history['val_loss'].append(average_val_loss)
 
         print(f"Epoch {epoch_idx+1} | Train Loss: {avg_epoch_loss:.4f} | Val Loss: {average_val_loss:.4f}\n")
 
+        if average_val_loss < best_val_loss:
+            best_val_loss = average_val_loss
+            early_stop_counter = 0
+            # best_model_weights = copy.deepcopy(model.state_dict())
+            torch.save(model.state_dict(), 'best_model.pth')
+            print(f"--> Validation loss cải thiện. Đã lưu lại trọng số model tốt nhất!\n")
+        else:
+            early_stop_counter += 1
+            if early_stop_counter >= patience:
+                print(f"[*] Đã kích hoạt Early Stopping tại Epoch {epoch_idx+1}! Dừng huấn luyện sớm.")
+                break # Thoát khỏi vòng lặp epoch
+
     print("Huấn luyện xong")
+    # Khôi phục lại trọng số tốt nhất trước khi trả model về
+    # model.load_state_dict(best_model_weights)
+    model.load_state_dict(torch.load("best_model.pth"))
+    
+    print("Đã tải lại trọng số của epoch có Validation Loss thấp nhất.")
     return model, history
 
 
