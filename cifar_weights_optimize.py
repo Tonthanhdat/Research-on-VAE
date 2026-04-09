@@ -33,7 +33,7 @@ def objective(trial, config):
         val_loader=val_loader,
         config=trial_config,
         device=device,
-        loss_fn=vae_loss_fn_ver3
+        loss_fn=vae_loss_fn_ver1
     )
 
     # Lấy giá trị validation loss của epoch cuối cùng làm thước đo
@@ -51,7 +51,8 @@ with open("config.yaml", "r", encoding="utf-8") as f:
 
 # Chia dữ liệu
 # full_train_dataset = MNISTDataset(train=True, download=False)
-full_train_dataset = CIFARDataset(train=True, download=True)
+# full_train_dataset = CIFARDataset(train=True, download=True)
+full_train_dataset = CIFARDataset(train=True, download=False)
 train_loader, val_loader = data_split(full_train_dataset=full_train_dataset, config=config)
 
 print("\n")
