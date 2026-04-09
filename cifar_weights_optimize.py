@@ -81,7 +81,7 @@ print("\nQuá trình tìm kiếm đã hoàn tất!")
 
 # --- IN RA KẾT QUẢ TỐT NHẤT ---
 best_trial = study.best_trial
-print(f"Giá trị Validation Loss cho Loss Function 3 tốt nhất đạt được: {best_trial.value:.4f}")
+print(f"Giá trị Validation Loss cho Loss Function 1 tốt nhất đạt được: {best_trial.value:.4f}")
 print("Bộ tham số hoàn hảo nhất là:")
 for key, value in best_trial.params.items():
     print(f"    {key}: {value}")
