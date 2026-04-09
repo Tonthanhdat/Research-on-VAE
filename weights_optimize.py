@@ -20,7 +20,7 @@ def objective(trial, config):
     trial_config['lambda_kl'] = suggested_lambda_kl
     trial_config['lambda_ssim'] = suggested_lambda_ssim
 
-    trial_config['num_epochs'] = 3 # 3-5. Sau khi tìm được bộ lambda tốt => train full
+    trial_config['num_epochs'] = 5 # 3-5. Sau khi tìm được bộ lambda tốt => train full
 
     model_vae_trial = VAE(latent_features=trial_config['latent_features'])
 
