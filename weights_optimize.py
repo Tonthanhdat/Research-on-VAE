@@ -4,7 +4,8 @@ import torch
 import yaml
 from data import MNISTDataset, data_split
 from model import VAE
-from utils import vae_loss_fn_ver3, run_training
+from utils import vae_loss_fn_ver3, vae_loss_fn_ver1, vae_loss_fn_ver2, run_training
+from optuna.samplers import TPESampler
 
 def objective(trial, config):
     suggested_lambda_rec = trial.suggest_float('lambda_rec', 0.1, 3.0)
@@ -28,7 +29,7 @@ def objective(trial, config):
         model=model_vae_trial,
         train_loader=train_loader,
         val_loader=val_loader,
-        config=config,
+        config=trial_config,
         device=device,
         loss_fn=vae_loss_fn_ver3
     )
@@ -61,8 +62,14 @@ print("Device: ", device)
 
 
 print("Bắt đầu quá trình Bayesian Optimization với Optuna...")
-# Tạo một study. Vì ta muốn Validation Loss càng nhỏ càng tốt nên direction="minimize"
-study = optuna.create_study(direction="minimize")
+
+# TPESampler sử dụng Expected Improvement (EI) làm acquisition function
+bo_sampler = TPESampler(
+    n_startup_trials = 5,
+    multivariable=True,
+    seed=42
+)
+study = optuna.create_study(direction="minimize", sampler=bo_sampler)
 
 # Chạy tối ưu hóa trong n_trials vòng (ví dụ: 20 vòng thử nghiệm). 
 study.optimize(lambda trial: objective(trial, config), n_trials=20)
@@ -71,7 +78,7 @@ print("\nQuá trình tìm kiếm đã hoàn tất!")
 
 # --- IN RA KẾT QUẢ TỐT NHẤT ---
 best_trial = study.best_trial
-print(f"Giá trị Validation Loss tốt nhất đạt được: {best_trial.value:.4f}")
+print(f"Giá trị Validation Loss cho Loss Function 3 tốt nhất đạt được: {best_trial.value:.4f}")
 print("Bộ tham số hoàn hảo nhất là:")
 for key, value in best_trial.params.items():
     print(f"    {key}: {value}")
